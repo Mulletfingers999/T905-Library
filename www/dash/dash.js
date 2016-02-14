@@ -17,6 +17,11 @@ function pd(dt) {
   }
 }
 
+//capitalization function
+String.prototype.capitalize = function() {
+    return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+};
+
 var firebase = new Firebase('https://t905-libraries.firebaseio.com/books/');
 
 firebase.on("value", function(snapshot) {
@@ -36,16 +41,16 @@ $('#add').click(function () {
     if (name === null) {
       //dismissed
     } else {
-      firebase.child(name.toLowerCase().trim()).once('value', function(snap){
+      firebase.child(name.capitalize().trim()).once('value', function(snap){
         if (snap == null) {
           var copy = bootbox.confirm('Book already exists in the app! Add another book copy?', function(res){
             if (res) {
-              firebase.child(name.toLowerCase().trim() + ' 2').set({holder: 'empty', due: 'empty', checked_out: 'empty'});
+              firebase.child(name.capitalize().trim() + ' 2').set({holder: 'empty', due: 'empty', checked_out: 'empty'});
               window.location.replace('./index.html');
             }
           });
         } else {
-          firebase.child(name.toLowerCase().trim()).set({holder: 'empty', due: 'empty', checked_out: 'empty'});
+          firebase.child(name.capitalize().trim()).set({holder: 'empty', due: 'empty', checked_out: 'empty'});
           window.location.replace('./index.html');
         }
       });
@@ -57,7 +62,7 @@ $('#add').click(function () {
 $('#set').click(function () {
   bootbox.prompt('What is the name of the book you will modify?', function (book) {
     if (book != null) {
-      book = book.toLowerCase().trim();
+      book = book.capitalize().trim();
       bootbox.dialog({
         message: 'What would you like to change ' + book + '\'s status to?',
         title: book + '\'s status',
@@ -97,10 +102,10 @@ $('#remove').click(function () {
     if (name === null) {
       //dismissed
     } else {
-      name = name.toLowerCase().trim();
+      name = name.capitalize().trim();
       bootbox.confirm('Do you really want to remove ' + name + '?', function (res) {
         if (res == true) {
-          firebase.child(name.toLowerCase().trim()).remove();
+          firebase.child(name.capitalize().trim()).remove();
           window.location.replace('./index.html');
         }
       });

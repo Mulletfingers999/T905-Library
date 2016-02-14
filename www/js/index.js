@@ -18,7 +18,9 @@ function pd(dt) {
 }
 
 $('#scan-btn').click(function () {
-  cordova.plugins.barcodeScanner.scan(
+  bootbox.alert('Please find the booklet\'s barcode (located on its back) and press OK. Then place the barcoed under the scanner.', function () {
+
+    cordova.plugins.barcodeScanner.scan(
     function (result) {
 
        if (result.cancelled || result.format != 'DATA_MATRIX') {
@@ -63,7 +65,9 @@ $('#scan-btn').click(function () {
     function (error) {
        alert("Scanning failed: " + error);
     }
- );
+    );
+  });
+  
 });
 
 var return_code = false;
@@ -148,17 +152,18 @@ var app = {
       firebase.once("value", function(snapshot) {
         var books = snapshot.val();
         console.log(books);
-        var i = 0;
+//        var i = 0;
         var lstkey ;
         snapshot.forEach(function (childSnapshot) {
           var key = childSnapshot.key();
           var value = childSnapshot.val();
-          $('.scrollable').append('<tr><td>' + i + ' ' + ps(key) + '</td><td>' + ps(value.holder) + '</td><td>' + pd(value.checked_out) + '</td><td>' + pd(value.due) + '</td></tr>');
-          i++;
+          $('.scrollable').append('<tr><td>' + ps(key) + '</td><td>' + ps(value.holder) + '</td><td>' + pd(value.checked_out) + '</td><td>' + pd(value.due) + '</td></tr>');
+//          i++;
           lstkey = key;
         });
-        console.log('lstkey: ' + key);
-        console.log('...done reading entries');
+//        $('.scrollable').append('<tr><td>Exited!!' + i + ' ' + ps(key) + '</td><td>' + ps(value.holder) + '</td><td>' + pd(value.checked_out) + '</td><td>' + pd(value.due) + '</td></tr>');
+        //console.log('lstkey: ' + key);
+        //console.log('...done reading entries');
         /*$.each(books, function(key, value) {
           $('.scrollable').append('<tr><td>' + ps(key) + '</td><td>' + ps(value.holder) + '</td><td>' + pd(value.checked_out) + '</td><td>' + pd(value.due) + '</td></tr>');
         });*/
