@@ -7,13 +7,14 @@
 # files for the dex VM
 *.dex
 
-# Java class files
+# Java class, jar, and axis archive files
 *.class
+*.jar
+*.aar
 
-# generated files - android project subfolder
-Android/bin/
-Android/gen/
-Android/assets/
+# generated files - android and iOS project subfolder
+platforms/
+plugins/
 
 # generated files
 bin/
@@ -48,3 +49,9 @@ IOS/www/
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
+
+#android keystore
+release-key.keystore
+
+#.gradle subdir
+platforms/android/.gradle/*
