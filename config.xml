@@ -1,12 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="org.dublintroop905.T905-Library" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="center.collab.T905-Library" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>T905 Library</name>
     <description>
-        Official Library App for Troop 905. Full Android support and coming iOS support!
+        Official Library App for Dublin Boy Scout Troop 905.
     </description>
     <author email="dev@cordova.apache.org" href="http://cordova.io">
         Apache Cordova Team
     </author>
+    <platform name="ios">
+        <icon src="res/icon72.png" width="72" height="72" />
+        <icon src="res/icon57.png" width="57" height="57" />
+    </platform>
     <icon src="res/icon.png" />
     <content src="index.html" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
