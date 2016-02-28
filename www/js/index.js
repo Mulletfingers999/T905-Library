@@ -22,96 +22,99 @@ String.prototype.capitalize = function() {
     return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
 };
 $('#scan-btn').click(function () {
-  bootbox.alert('<ul><li>Please find the booklet\'s barcode (located on its back) and press OK.</li><br><li>Then place the barcode under the scanner.</li></ul>', function () {
+  bootbox.confirm('<ul><li>Please find the booklet\'s barcode (located on its back) and press OK.</li><br><li>Then place the barcode under the scanner.</li></ul>', function (res) {
+    if (res == true) {
+      cordova.plugins.barcodeScanner.scan(
+      function (result) {
 
-    cordova.plugins.barcodeScanner.scan(
-    function (result) {
-
-       if (result.cancelled || result.format != 'DATA_MATRIX') {
-         bootbox.alert('That barcode isn\'t correct. Are you sure you scanned the booklet\'s code?');
-       } else {
-         bootbox.prompt({
-           title: "What is your full name?",
-           value: localStorage.getItem("name"),
-           callback: function(name){
-             name = name.trim();
-             if (name != null && name != "") {
-               localStorage.setItem("name", name);
-               var firebase = new Firebase('https://t905-libraries.firebaseio.com/books/').child((result.text + '').capitalize());
-               var today = new Date();
-               var due_by = new Date(today.getFullYear(),today.getMonth(),today.getDate()+21); //due in 21 days (3 weeks)
-               firebase.set({holder: name, checked_out: today.toString(), due: due_by.toString()}, function (err) {
-                 if (err) {
-                   bootbox.alert('An error has occured: ' + error);
-                 } else {
-                   var history_fb = new Firebase('https://t905-libraries.firebaseio.com/history').child((result.text + '').capitalize()).child(name);
-                   history_fb.set({checked_out: today.toString()});
-                   cordova.plugins.notification.local.schedule({
-                     id: 1,
-                     title: 'Merit Badge Book Coming Due',
-                     text: 'The ' + (result.text + '').capitalize() + ' T905 book is due by ' + pd(due_by),
-                     every: 'day',
-                     at: new Date(due_by.getFullYear(), due_by.getMonth(), due_by.getDate()-7) //starts reminding the week of
-                  }, function () {
-                    bootbox.alert('Checkout successful. Your book is due by ' + due_by.toDateString() + ' (3 weeks)', function () {
-                      window.location.replace('./index.html');
-                    });
-
-                  });
-                 }
-               });
+         if (result.cancelled || result.format != 'DATA_MATRIX') {
+           bootbox.alert('That barcode isn\'t correct. Are you sure you scanned the booklet\'s code?');
+         } else {
+           bootbox.prompt({
+             title: "What is your full name?",
+             value: localStorage.getItem("name"),
+             callback: function(name){
+               name = name.trim();
+               if (name != null && name != "") {
+                 localStorage.setItem("name", name);
+                 var firebase = new Firebase('https://t905-libraries.firebaseio.com/books/').child((result.text + '').capitalize());
+                 var today = new Date();
+                 // FIXME: Change +7 below to + 21
+                 var due_by = new Date(today.getFullYear(),today.getMonth(),today.getDate()+21); //due in 21 days (3 weeks)
+                 firebase.set({holder: name, checked_out: today.toString(), due: due_by.toString()}, function (err) {
+                   if (err) {
+                     bootbox.alert('An error has occured: ' + error);
+                   } else {
+                     var history_fb = new Firebase('https://t905-libraries.firebaseio.com/history').child((result.text + '').capitalize()).child(name);
+                     history_fb.set({checked_out: today.toString()});
+                     /*cordova.plugins.notification.local.schedule({
+                       id: (result.text).charCodeAt(0),
+                       title: 'Merit Badge Book Coming Due',
+                       text: 'The ' + (result.text + '').capitalize() + ' T905 book is due by ' + pd(due_by),
+                       every: 'day',
+                       at: new Date(due_by.getFullYear(), due_by.getMonth(), due_by.getDate()-7) //starts reminding the week of
+                    }, function () {*/
+                      bootbox.alert('Checkout successful. Your book is due by ' + due_by.toDateString() + ' (3 weeks)', function () {
+                        window.location.replace('./index.html');
+                      });
+                      console.log((result.text).charCodeAt(0));
+                    //});
+                   }
+                 });
+               }
              }
-           }
-         });
-       }
+           });
+         }
 
-    },
-    function (error) {
-       bootbox.alert("Scanning failed: " + error);
+      },
+      function (error) {
+         bootbox.alert("Scanning failed: " + error);
+      }
+      );
     }
-    );
   });
-
 });
 
 $('#return-btn').click(function () {
-  bootbox.alert('<ul><li>You must be in the Scout Shack to return a book.</li><br><li>Please locate the T905 Library Shelf.</li><br><li>Then hit OK and scan the barcode located on its front.</li></ul>', function () {
-    cordova.plugins.barcodeScanner.scan(
-      function (result) {
-        if (result.cancelled || result.format != 'QR_CODE' || result.text != 'return_qr_code') {
-          bootbox.alert('That barcode isn\'t correct. Are you sure you scanned the library\'s barcode?');
-        } else {
-          //success, scan book
-          bootbox.alert('<ul><li>Please find the booklet\'s barcode (located on its back) and press OK.</li><br> <li>Then place the barcode under the scanner.</li></ul>', function () {
-            cordova.plugins.barcodeScanner.scan(
-              function (result) {
-                if (result.cancelled || result.format != 'DATA_MATRIX') {
-                  bootbox.alert('That barcode isn\'t correct. Are you sure you scanned the book\'s barcode?');
-                } else {
-                  //success, return the book in firebase
-                  var firebase = new Firebase('https://t905-libraries.firebaseio.com/books/').child((result.text + '').capitalize());
-                  firebase.set({holder: 'empty', due: 'empty', checked_out: 'empty'});
-                  var history_fb = new Firebase('https://t905-libraries.firebaseio.com/history/').child((result.text + '').capitalize()).child(localStorage.name);
-                  history_fb.set({returned: new Date().toString()});
-                  cordova.plugins.notification.local.clear(1, function() {
-                    console.log('INF: cleared book reminder notification');
-                    bootbox.alert('Done! Your ' + return_booklet + ' booklet has been returned!', function () {
-                      window.location.replace('./index.html');
-                    });
-                  });
+  bootbox.confirm('<ul><li>You must be in the Scout Shack to return a book.</li><br><li>Please locate the T905 Library Shelf.</li><br><li>Then hit OK and scan the barcode located on its front.</li></ul>', function (res) {
+    if (res) {
+      cordova.plugins.barcodeScanner.scan(
+        function (result) {
+          if (result.cancelled || result.format != 'QR_CODE' || result.text != 'return_qr_code') {
+            bootbox.alert('That barcode isn\'t correct. Are you sure you scanned the library\'s barcode?');
+          } else {
+            //success, scan book
+            bootbox.alert('<ul><li>Please find the booklet\'s barcode (located on its back) and press OK.</li><br> <li>Then place the barcode under the scanner.</li></ul>', function () {
+              cordova.plugins.barcodeScanner.scan(
+                function (result) {
+                  if (result.cancelled || result.format != 'DATA_MATRIX') {
+                    bootbox.alert('That barcode isn\'t correct. Are you sure you scanned the book\'s barcode?');
+                  } else {
+                    //success, return the book in firebase
+                    var firebase = new Firebase('https://t905-libraries.firebaseio.com/books/').child((result.text + '').capitalize());
+                    firebase.set({holder: 'empty', due: 'empty', checked_out: 'empty'});
+                    var history_fb = new Firebase('https://t905-libraries.firebaseio.com/history/').child((result.text + '').capitalize()).child(localStorage.name);
+                    history_fb.set({returned: new Date().toString()});
+                    cordova.plugins.notification.local.clear(return_booklet.charCodeAt(0), function() {
+                      console.log('INF: cleared ' + return_booklet + ' reminder notification');
+                      bootbox.alert('Done! Your ' + return_booklet + ' booklet has been returned!', function () {
+                        window.location.replace('./index.html');
+                      });
+                    }, this);
+                  }
+                },
+                function (error) {
+                    bootbox.alert("Scanning failed: " + error);
                 }
-              },
-              function (error) {
-                  bootbox.alert("Scanning failed: " + error);
-              }
-           );
-          });
+             );
+            });
+          }
+        },
+        function (error) {
+            bootbox.alert("Scanning failed: " + error);
         }
-      },
-      function (error) {
-          bootbox.alert("Scanning failed: " + error);
-      }
-   );
+     );
+   }
   });
 
 });
@@ -217,6 +220,11 @@ var app = {
       }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
       });
+
+      cordova.plugins.notification.local.getTriggeredIds(function(ids) {
+          console.log(ids);
+          console.log('to: ' + typeof ids)
+      }, cordova.plugins);
     }
 };
 
