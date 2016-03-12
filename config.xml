@@ -10,6 +10,7 @@
     <platform name="ios">
         <icon src="res/icon72.png" width="72" height="72" />
         <icon src="res/icon57.png" width="57" height="57" />
+        <splash src="res/splash.png" width="1334" height="750" />
     </platform>
     <icon src="res/icon.png" />
     <content src="index.html" />
